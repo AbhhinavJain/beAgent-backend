@@ -47,9 +47,12 @@ public class SecurityConfig {
         String frontendUrl = System.getenv("FRONTEND_URL");
         if (frontendUrl == null || frontendUrl.isEmpty()) {
             frontendUrl = "http://localhost:5173";
+        } else if (frontendUrl.endsWith("/")) {
+            // Strip trailing slash if the user added it by accident
+            frontendUrl = frontendUrl.substring(0, frontendUrl.length() - 1);
         }
         
-        configuration.setAllowedOrigins(List.of(frontendUrl));
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl, "http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
