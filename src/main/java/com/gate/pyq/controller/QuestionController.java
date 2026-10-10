@@ -25,9 +25,14 @@ public class QuestionController {
     public ResponseEntity<List<QuestionDto>> getQuestions(
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String topic,
-            @RequestParam(required = false, defaultValue = "50") Integer limit
+            @RequestParam(required = false, defaultValue = "50") Integer limit,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false, defaultValue = "false") Boolean unattemptedOnly,
+            @RequestParam(required = false, defaultValue = "false") Boolean attemptedOnly,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String questionType
     ) {
-        List<QuestionDto> questions = quizService.getQuestions(subject, topic, limit);
+        List<QuestionDto> questions = quizService.getQuestions(subject, topic, limit, username, unattemptedOnly, attemptedOnly, search, questionType);
         return ResponseEntity.ok(questions);
     }
 

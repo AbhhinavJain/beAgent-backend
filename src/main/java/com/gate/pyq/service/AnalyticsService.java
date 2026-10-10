@@ -1,8 +1,10 @@
 package com.gate.pyq.service;
 
+import com.gate.pyq.config.CacheConfig;
 import com.gate.pyq.dto.TopicPerformanceDto;
 import com.gate.pyq.repository.UserAttemptRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,10 @@ public class AnalyticsService {
 
     private final UserAttemptRepository userAttemptRepository;
 
+    @Cacheable(
+            value = CacheConfig.TOPIC_PERFORMANCE_CACHE,
+            key = "#username != null && !#username.isBlank() ? #username.trim().toLowerCase() : 'GLOBAL'"
+    )
     @Transactional(readOnly = true)
     public List<TopicPerformanceDto> getTopicPerformance(String username) {
         List<UserAttemptRepository.TopicAggregationProjection> rows;

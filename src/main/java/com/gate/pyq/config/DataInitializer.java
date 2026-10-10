@@ -44,14 +44,30 @@ public class DataInitializer implements CommandLineRunner {
                 // Ignored if dialect uses a different syntax or already TEXT
             }
 
+            try {
+                jdbcTemplate.execute("ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_type VARCHAR(10) DEFAULT 'MCQ'");
+            } catch (Exception ignored) {
+            }
+            try {
+                jdbcTemplate.execute("ALTER TABLE questions ADD COLUMN IF NOT EXISTS has_image BOOLEAN DEFAULT FALSE");
+            } catch (Exception ignored) {
+            }
+            try {
+                jdbcTemplate.execute("UPDATE questions SET question_type = 'MCQ' WHERE question_type IS NULL");
+                jdbcTemplate.execute("UPDATE questions SET has_image = FALSE WHERE has_image IS NULL");
+            } catch (Exception ignored) {
+            }
+
             // If database is empty on a fresh cloud deployment (e.g. Render), restore extracted PDF backup into DB
             if (questionRepository.count() == 0) {
                 ClassPathResource backupResource = new ClassPathResource("questions_emergency_backup.json");
                 if (backupResource.exists()) {
                     try (InputStream is = backupResource.getInputStream()) {
                         List<QuestionDto> backupDtos = objectMapper.readValue(is, new TypeReference<>() {});
+                        java.util.Set<String> seenTexts = new java.util.HashSet<>();
                         List<Question> entities = backupDtos.stream()
                                 .filter(dto -> dto.getQuestionText() != null && !dto.getQuestionText().isBlank())
+                                .filter(dto -> seenTexts.add(dto.getQuestionText().trim().toLowerCase()))
                                 .map(dto -> Question.builder()
                                         .subject(dto.getSubject())
                                         .topic(dto.getTopic())
@@ -61,6 +77,8 @@ public class DataInitializer implements CommandLineRunner {
                                         .correctAnswer(dto.getCorrectAnswer())
                                         .explanation(dto.getExplanation())
                                         .imageUrl(dto.getImageUrl())
+                                        .questionType(dto.getQuestionType() != null ? dto.getQuestionType() : "MCQ")
+                                        .hasImage(dto.getHasImage() != null ? dto.getHasImage() : false)
                                         .build())
                                 .toList();
                         questionRepository.saveAll(entities);

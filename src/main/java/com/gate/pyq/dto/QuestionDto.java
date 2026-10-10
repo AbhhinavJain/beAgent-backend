@@ -22,5 +22,7 @@ public class QuestionDto {
     private String correctAnswer;
     private String explanation;
     private String imageUrl;
+    private String questionType;
+    private Boolean hasImage;
     private LocalDateTime createdAt;
 }

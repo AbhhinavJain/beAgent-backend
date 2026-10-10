@@ -47,4 +47,7 @@ public interface UserAttemptRepository extends JpaRepository<UserAttempt, Long> 
         ORDER BY q.subject ASC, q.topic ASC
     """)
     List<TopicAggregationProjection> aggregateTopicPerformanceByUsername(@Param("username") String username);
+
+    @Query("SELECT DISTINCT ua.question.id FROM UserAttempt ua WHERE LOWER(ua.username) = LOWER(:username)")
+    List<Long> findAttemptedQuestionIdsByUsername(@Param("username") String username);
 }

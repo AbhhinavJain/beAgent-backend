@@ -47,6 +47,14 @@ public class Question {
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
+    @Column(name = "question_type", length = 10)
+    @Builder.Default
+    private String questionType = "MCQ";
+
+    @Column(name = "has_image")
+    @Builder.Default
+    private Boolean hasImage = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

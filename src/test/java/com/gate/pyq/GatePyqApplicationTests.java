@@ -39,12 +39,23 @@ class GatePyqApplicationTests {
     @Autowired
     private UserAttemptRepository userAttemptRepository;
 
+    @Autowired
+    private org.springframework.cache.CacheManager cacheManager;
+
     private Question savedQuestion;
 
     @BeforeEach
     void setUp() {
         userAttemptRepository.deleteAll();
         questionRepository.deleteAll();
+        if (cacheManager != null) {
+            cacheManager.getCacheNames().forEach(name -> {
+                var cache = cacheManager.getCache(name);
+                if (cache != null) {
+                    cache.clear();
+                }
+            });
+        }
 
         savedQuestion = questionRepository.save(Question.builder()
                 .subject("Operating Systems")
@@ -72,6 +83,16 @@ class GatePyqApplicationTests {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].subject", is("Operating Systems")))
                 .andExpect(jsonPath("$[0].options", hasSize(4)));
+    }
+
+    @Test
+    void shouldFetchUnattemptedQuestions() throws Exception {
+        mockMvc.perform(get("/api/v1/questions")
+                        .param("limit", "10")
+                        .param("username", "dev")
+                        .param("unattemptedOnly", "true")
+                        .param("attemptedOnly", "false"))
+                .andExpect(status().isOk());
     }
 
     @Test
